@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Analystic — Market Analyzer</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="logo">
+            ANALY<span>STIC</span>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <span id="systemStatus">SYSTEM ONLINE</span>
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- HERO -->
+        <section class="hero">
+
+            <div class="eyebrow">
+                MARKET PROBABILITY ANALYZER
+            </div>
+
+            <h1>
+                Analyze the market.<br>
+                <span>Make your decision.</span>
+            </h1>
+
+            <p>
+                Analiza los ticks del mercado en tiempo real
+                y genera una estimación estadística basada
+                en los datos observados.
+            </p>
+
+        </section>
+
+
+        <!-- CONTROLES -->
+        <section class="control-panel">
+
+            <div class="field">
+
+                <label for="market">
+                    MARKET
+                </label>
+
+                <select id="market">
+
+                    <option value="vol10">
+                        Volatility 10 (1s)
+                    </option>
+
+                    <option value="vol25">
+                        Volatility 25 (1s)
+                    </option>
+
+                    <option value="vol50">
+                        Volatility 50 (1s)
+                    </option>
+
+                    <option value="vol75">
+                        Volatility 75 (1s)
+                    </option>
+
+                    <option value="vol100">
+                        Volatility 100 (1s)
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="strategy">
+                    STRATEGY
+                </label>
+
+                <select id="strategy">
+
+                    <option value="matches">
+                        Matches / Differs
+                    </option>
+
+                    <option value="evenodd">
+                        Even / Odd
+                    </option>
+
+                    <option value="overunder">
+                        Over / Under
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                id="startBtn"
+                class="start-button"
+                type="button"
+            >
+                START ANALYSIS
+            </button>
+
+        </section>
+
+
+        <!-- LIVE MARKET -->
+        <section class="analysis-card">
+
+            <div class="analysis-top">
+
+                <div>
+
+                    <div class="section-title">
+                        LIVE MARKET
+                    </div>
+
+                    <h2 id="marketTitle">
+                        Volatility 10 (1s)
+                    </h2>
+
+                </div>
+
+                <div
+                    id="analysisStatus"
+                    class="status-badge"
+                >
+                    READY
+                </div>
+
+            </div>
+
+
+            <!-- GRÁFICA -->
+            <div class="chart-container">
+
+                <div class="chart-grid"></div>
+
+                <canvas id="marketChart"></canvas>
+
+
+                <div class="chart-overlay">
+
+                    <div>
+                        LAST DIGIT
+                    </div>
+
+                    <strong id="lastDigit">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="tick-counter">
+
+                    <span>
+                        TICKS ANALYZED
+                    </span>
+
+                    <strong id="tickDisplay">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ESTADÍSTICAS -->
+            <div class="stats-grid">
+
+                <div class="stat">
+
+                    <span>
+                        MARKET
+                    </span>
+
+                    <strong id="marketDisplay">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        STRATEGY
+                    </span>
+
+                    <strong id="strategyDisplay">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        ANALYSIS TIME
+                    </span>
+
+                    <strong id="timeDisplay">
+                        00:00
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        STATUS
+                    </span>
+
+                    <strong id="statusDisplay">
+                        READY
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- DISTRIBUCIÓN DE DÍGITOS -->
+        <section
+            id="digitSection"
+            class="digit-card"
+        >
+
+            <div class="section-title">
+                DIGIT DISTRIBUTION
+            </div>
+
+            <h2>
+                Market digits
+            </h2>
+
+            <p>
+                Distribución estadística de los últimos
+                dígitos recibidos.
+            </p>
+
+            <div
+                id="digitBars"
+                class="digit-bars"
+            >
+                <!-- JavaScript -->
+            </div>
+
+        </section>
+
+
+        <!-- RESULTADO FINAL -->
+        <section
+            id="resultSection"
+            class="result-card hidden"
+        >
+
+            <div class="result-header">
+
+                <div>
+
+                    <div class="section-title">
+                        FINAL ANALYSIS
+                    </div>
+
+                    <h2>
+                        Analysis Result
+                    </h2>
+
+                </div>
+
+                <div class="final-badge">
+                    FINAL SIGNAL
+                </div>
+
+            </div>
+
+
+            <div class="result-content">
+
+                <div class="recommendation">
+
+                    <span>
+                        RECOMMENDATION
+                    </span>
+
+                    <h3 id="recommendation">
+                        —
+                    </h3>
+
+                </div>
+
+
+                <div class="percentage">
+
+                    <span>
+                        OBSERVED PERCENTAGE
+                    </span>
+
+                    <strong id="percentage">
+                        0%
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-details">
+
+                <div>
+
+                    <span>
+                        TICKS ANALYZED
+                    </span>
+
+                    <strong id="resultTicks">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        CONFIDENCE
+                    </span>
+
+                    <strong id="confidence">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        MARKET
+                    </span>
+
+                    <strong id="resultMarket">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="warning">
+
+                <strong>
+                    STATISTICAL ESTIMATE
+                </strong>
+
+                <p>
+                    Este resultado representa una estimación
+                    estadística basada en los datos observados
+                    durante el análisis. No garantiza el resultado
+                    de una operación futura.
+                </p>
+
+            </div>
+
+
+            <button
+                id="newAnalysis"
+                class="new-button"
+                type="button"
+            >
+                NEW ANALYSIS
+            </button>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div>
+            ANALYSTIC
+        </div>
+
+        <p>
+            Real-time market analysis tool
+            • Manual execution only
+        </p>
+
+    </footer>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+<script src="script.js"></script>
+
+</body>
+
+</html>
