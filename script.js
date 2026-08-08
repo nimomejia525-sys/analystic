@@ -1,7 +1,137 @@
 "use strict";
+/* =========================================================
+   ANALYSTIC — ACCESS SYSTEM + REAL MARKET ANALYZER
+   ========================================================= */
+
+/* =========================================================
+   50 ACCESS CODES
+   ========================================================= */
+const accessCodes = [
+    "60-27-31", "84-15-92", "37-61-04", "72-48-19", "25-93-67",
+    "41-08-56", "96-32-75", "18-64-29", "53-07-81", "69-24-38",
+    "12-85-47", "78-03-61", "45-92-16", "31-57-84", "87-26-40",
+    "54-19-73", "06-48-95", "63-71-28", "29-84-53", "91-35-07",
+    "46-12-89", "73-58-24", "15-69-42", "82-37-56", "38-94-10",
+    "67-21-85", "04-76-39", "59-13-68", "27-80-41", "95-46-23",
+    "34-72-09", "61-05-87", "88-43-16", "20-97-54", "76-31-82",
+    "43-68-25", "09-52-74", "57-86-13", "24-39-91", "70-14-63",
+    "11-47-82", "83-29-65", "36-75-18", "92-06-43", "48-51-27",
+    "65-34-79", "17-83-52", "79-42-06", "52-68-31", "86-17-94"
+];
+
+/* =========================================================
+   ACCESS SYSTEM
+   ========================================================= */
+const accessInput = document.getElementById("accessCode");
+const loginButton = document.getElementById("loginButton");
+const loginMessage = document.getElementById("loginMessage");
+const loginContainer = document.querySelector(".login-container");
+const mainApp = document.getElementById("mainApp");
+const loadingScreen = document.getElementById("loadingScreen");
+
+function showLoginMessage(message, type) {
+    if (!loginMessage) {
+        return;
+    }
+    loginMessage.textContent = message;
+    loginMessage.className = "login-message " + type;
+}
+
+function login() {
+    if (!accessInput) {
+        return;
+    }
+
+    const enteredCode = accessInput.value.trim();
+
+    if (enteredCode === "") {
+        showLoginMessage("ENTER YOUR ACCESS CODE", "error");
+        return;
+    }
+
+    const validCode = accessCodes.includes(enteredCode);
+
+    if (!validCode) {
+        showLoginMessage("ACCESS CODE NOT REGISTERED", "error");
+        accessInput.value = "";
+        accessInput.focus();
+        return;
+    }
+
+    showLoginMessage("ACCESS GRANTED", "success");
+
+    setTimeout(() => {
+        if (loginContainer) {
+            loginContainer.classList.add("hidden");
+        }
+
+        if (loadingScreen) {
+            loadingScreen.classList.remove("hidden");
+        }
+
+        setTimeout(() => {
+            if (loadingScreen) {
+                loadingScreen.classList.add("hidden");
+            }
+
+            if (mainApp) {
+                mainApp.classList.remove("hidden");
+            }
+
+            // Arranca el analizador SOLO después de un login válido
+            initializeAnalyzer();
+        }, 2500);
+    }, 400);
+}
+
+if (loginButton) {
+    loginButton.addEventListener("click", login);
+}
+
+if (accessInput) {
+    accessInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            login();
+        }
+    });
+}
+
+const logoutButton = document.getElementById("logoutButton");
+
+function logout() {
+    // Si hay un análisis en curso, lo detenemos antes de salir
+    if (typeof isAnalyzing !== "undefined" && isAnalyzing) {
+        stopAnalysis();
+    }
+
+    if (mainApp) {
+        mainApp.classList.add("hidden");
+    }
+
+    if (loadingScreen) {
+        loadingScreen.classList.add("hidden");
+    }
+
+    if (loginContainer) {
+        loginContainer.classList.remove("hidden");
+    }
+
+    if (accessInput) {
+        accessInput.value = "";
+        accessInput.focus();
+    }
+
+    showLoginMessage("", "");
+}
+
+if (logoutButton) {
+    logoutButton.addEventListener("click", logout);
+}
+
 
 /* =========================================================
    ANALYSTIC — REAL MARKET ANALYZER
+   (lógica intacta, tal como la enviaste)
    ========================================================= */
 
 const DERIV_WS =
@@ -75,17 +205,11 @@ let finalResult = null;
    ========================================================= */
 
 const marketNames = {
-
     vol10: "Volatility 10 (1s)",
-
     vol25: "Volatility 25 (1s)",
-
     vol50: "Volatility 50 (1s)",
-
     vol75: "Volatility 75 (1s)",
-
     vol100: "Volatility 100 (1s)"
-
 };
 
 
@@ -94,15 +218,12 @@ const marketNames = {
    ========================================================= */
 
 function setStatus(text) {
-
     if (analysisStatus) {
         analysisStatus.textContent = text;
     }
-
     if (statusDisplay) {
         statusDisplay.textContent = text;
     }
-
 }
 
 
@@ -111,11 +232,8 @@ function setStatus(text) {
    ========================================================= */
 
 function getSelectedMarket() {
-
     const value = marketSelect.value;
-
     return marketNames[value] || value;
-
 }
 
 
@@ -124,11 +242,7 @@ function getSelectedMarket() {
    ========================================================= */
 
 function getSelectedStrategy() {
-
-    return strategySelect.options[
-        strategySelect.selectedIndex
-    ].text;
-
+    return strategySelect.options[strategySelect.selectedIndex].text;
 }
 
 
@@ -137,23 +251,18 @@ function getSelectedStrategy() {
    ========================================================= */
 
 function updateMarketInformation() {
-
     const market = getSelectedMarket();
-
     const strategy = getSelectedStrategy();
 
     if (marketTitle) {
         marketTitle.textContent = market;
     }
-
     if (marketDisplay) {
         marketDisplay.textContent = market;
     }
-
     if (strategyDisplay) {
         strategyDisplay.textContent = strategy;
     }
-
 }
 
 
@@ -162,97 +271,47 @@ function updateMarketInformation() {
    ========================================================= */
 
 function connectToDeriv() {
-
     return new Promise((resolve, reject) => {
-
-        if (
-            socket &&
-            socket.readyState === WebSocket.OPEN
-        ) {
-
+        if (socket && socket.readyState === WebSocket.OPEN) {
             resolve();
-
             return;
-
         }
-
 
         setStatus("CONNECTING");
 
-
         try {
-
-            socket =
-                new WebSocket(DERIV_WS);
-
+            socket = new WebSocket(DERIV_WS);
         } catch (error) {
-
             reject(error);
-
             return;
-
         }
 
-
         socket.onopen = () => {
-
-            console.log(
-                "Connected to Deriv"
-            );
-
-
+            console.log("Connected to Deriv");
             setStatus("CONNECTED");
 
-
-            socket.send(
-                JSON.stringify({
-
-                    active_symbols: "brief",
-
-                    req_id: 1
-
-                })
-            );
-
+            socket.send(JSON.stringify({
+                active_symbols: "brief",
+                req_id: 1
+            }));
 
             resolve();
-
         };
-
 
         socket.onmessage = event => {
-
             handleMessage(event);
-
         };
-
 
         socket.onerror = error => {
-
-            console.error(
-                "WebSocket error:",
-                error
-            );
-
-            setStatus(
-                "CONNECTION ERROR"
-            );
-
+            console.error("WebSocket error:", error);
+            setStatus("CONNECTION ERROR");
         };
-
 
         socket.onclose = () => {
-
-            console.log(
-                "WebSocket closed"
-            );
-
+            console.log("WebSocket closed");
             subscribed = false;
-
         };
-
     });
-
 }
 
 
@@ -261,72 +320,34 @@ function connectToDeriv() {
    ========================================================= */
 
 function handleMessage(event) {
-
     let data;
 
     try {
-
-        data =
-            JSON.parse(event.data);
-
+        data = JSON.parse(event.data);
     } catch {
-
         return;
-
     }
-
 
     if (data.error) {
-
-        console.error(
-            "Deriv error:",
-            data.error
-        );
-
+        console.error("Deriv error:", data.error);
         setStatus("API ERROR");
-
         return;
-
     }
 
-
-    if (
-        data.msg_type ===
-        "active_symbols"
-    ) {
-
-        handleActiveSymbols(
-            data.active_symbols || []
-        );
-
+    if (data.msg_type === "active_symbols") {
+        handleActiveSymbols(data.active_symbols || []);
         return;
-
     }
 
-
-    if (
-        data.msg_type ===
-        "history"
-    ) {
-
+    if (data.msg_type === "history") {
         handleHistory(data);
-
         return;
-
     }
 
-
-    if (
-        data.msg_type ===
-        "tick"
-    ) {
-
+    if (data.msg_type === "tick") {
         handleTick(data.tick);
-
         return;
-
     }
-
 }
 
 
@@ -335,55 +356,22 @@ function handleMessage(event) {
    ========================================================= */
 
 function findMarketSymbol() {
+    const selected = marketSelect.value;
 
-    const selected =
-        marketSelect.value;
-
-
-    /*
-     * Intentamos identificar el número.
-     */
-
-    const match =
-        selected.match(/\d+/);
-
+    const match = selected.match(/\d+/);
 
     if (!match) {
-
         return null;
-
     }
 
+    const number = match[0];
 
-    const number =
-        match[0];
-
-
-    /*
-     * Buscar específicamente
-     * Volatility X.
-     */
-
-    let found =
-        activeSymbols.find(item => {
-
-            const name =
-                String(
-                    item.underlying_symbol_name ||
-                    ""
-                ).toLowerCase();
-
-
-            return (
-                name.includes("volatility") &&
-                name.includes(number)
-            );
-
-        });
-
+    let found = activeSymbols.find(item => {
+        const name = String(item.underlying_symbol_name || "").toLowerCase();
+        return name.includes("volatility") && name.includes(number);
+    });
 
     return found || null;
-
 }
 
 
@@ -392,105 +380,39 @@ function findMarketSymbol() {
    ========================================================= */
 
 function handleActiveSymbols(symbols) {
-
     activeSymbols = symbols;
 
-
-    const market =
-        findMarketSymbol();
-
+    const market = findMarketSymbol();
 
     if (!market) {
-
-        console.error(
-            "Market not found:",
-            getSelectedMarket()
-        );
-
-
-        setStatus(
-            "MARKET NOT FOUND"
-        );
-
-
+        console.error("Market not found:", getSelectedMarket());
+        setStatus("MARKET NOT FOUND");
         return;
-
     }
 
+    const newSymbol = market.underlying_symbol;
 
-    const newSymbol =
-        market.underlying_symbol;
-
-
-    /*
-     * Si el mercado es diferente,
-     * cambiamos la suscripción.
-     */
-
-    if (
-        previousSymbol &&
-        previousSymbol !== newSymbol
-    ) {
-
-        unsubscribeFromSymbol(
-            previousSymbol
-        );
-
+    if (previousSymbol && previousSymbol !== newSymbol) {
+        unsubscribeFromSymbol(previousSymbol);
     }
 
+    currentSymbol = newSymbol;
+    previousSymbol = newSymbol;
 
-    currentSymbol =
-        newSymbol;
-
-
-    previousSymbol =
-        newSymbol;
-
-
-    console.log(
-        "Selected market:",
-        getSelectedMarket()
-    );
-
-
-    console.log(
-        "Real symbol:",
-        currentSymbol
-    );
-
-
-    /*
-     * MUY IMPORTANTE:
-     * limpiar gráfica anterior.
-     */
+    console.log("Selected market:", getSelectedMarket());
+    console.log("Real symbol:", currentSymbol);
 
     chartPrices = [];
 
-
     if (lastDigit) {
-
-        lastDigit.textContent =
-            "—";
-
+        lastDigit.textContent = "—";
     }
-
 
     markChartUpdate();
 
-
-    /*
-     * Pedir historial nuevo.
-     */
-
     requestHistory();
 
-
-    /*
-     * Suscribir al nuevo mercado.
-     */
-
     subscribeToCurrentSymbol();
-
 }
 
 
@@ -499,38 +421,18 @@ function handleActiveSymbols(symbols) {
    ========================================================= */
 
 function unsubscribeFromSymbol(symbol) {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN ||
-        !symbol
-    ) {
-
+    if (!socket || socket.readyState !== WebSocket.OPEN || !symbol) {
         return;
-
     }
 
+    console.log("Unsubscribing:", symbol);
 
-    console.log(
-        "Unsubscribing:",
-        symbol
-    );
-
-
-    socket.send(
-        JSON.stringify({
-
-            forget_all: "ticks",
-
-            req_id: 10
-
-        })
-    );
-
+    socket.send(JSON.stringify({
+        forget_all: "ticks",
+        req_id: 10
+    }));
 
     subscribed = false;
-
 }
 
 
@@ -539,46 +441,19 @@ function unsubscribeFromSymbol(symbol) {
    ========================================================= */
 
 function requestHistory() {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN ||
-        !currentSymbol
-    ) {
-
+    if (!socket || socket.readyState !== WebSocket.OPEN || !currentSymbol) {
         return;
-
     }
 
+    console.log("Requesting history:", currentSymbol);
 
-    console.log(
-        "Requesting history:",
-        currentSymbol
-    );
-
-
-    socket.send(
-        JSON.stringify({
-
-            ticks_history:
-                currentSymbol,
-
-            count:
-                100,
-
-            end:
-                "latest",
-
-            style:
-                "ticks",
-
-            req_id:
-                20
-
-        })
-    );
-
+    socket.send(JSON.stringify({
+        ticks_history: currentSymbol,
+        count: 100,
+        end: "latest",
+        style: "ticks",
+        req_id: 20
+    }));
 }
 
 
@@ -587,50 +462,21 @@ function requestHistory() {
    ========================================================= */
 
 function subscribeToCurrentSymbol() {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN ||
-        !currentSymbol
-    ) {
-
+    if (!socket || socket.readyState !== WebSocket.OPEN || !currentSymbol) {
         return;
-
     }
 
+    console.log("Subscribing:", currentSymbol);
 
-    console.log(
-        "Subscribing:",
-        currentSymbol
-    );
-
-
-    socket.send(
-        JSON.stringify({
-
-            ticks:
-                currentSymbol,
-
-            subscribe:
-                1,
-
-            req_id:
-                30
-
-        })
-    );
-
+    socket.send(JSON.stringify({
+        ticks: currentSymbol,
+        subscribe: 1,
+        req_id: 30
+    }));
 
     subscribed = true;
 
-
-    setStatus(
-        isAnalyzing
-            ? "ANALYZING"
-            : "LIVE MARKET"
-    );
-
+    setStatus(isAnalyzing ? "ANALYZING" : "LIVE MARKET");
 }
 
 
@@ -639,48 +485,22 @@ function subscribeToCurrentSymbol() {
    ========================================================= */
 
 function handleHistory(data) {
-
-    if (
-        !data.history ||
-        !data.history.prices
-    ) {
-
+    if (!data.history || !data.history.prices) {
         return;
-
     }
-
-
-    /*
-     * Limpiamos SIEMPRE antes
-     * de colocar el nuevo historial.
-     */
 
     chartPrices = [];
 
-
     data.history.prices.forEach(price => {
-
-        const value =
-            Number(price);
-
-
-        if (
-            Number.isFinite(value)
-        ) {
-
+        const value = Number(price);
+        if (Number.isFinite(value)) {
             chartPrices.push(value);
-
         }
-
     });
 
-
-    chartPrices =
-        chartPrices.slice(-150);
-
+    chartPrices = chartPrices.slice(-150);
 
     markChartUpdate();
-
 }
 
 
@@ -689,103 +509,46 @@ function handleHistory(data) {
    ========================================================= */
 
 function handleTick(tick) {
-
     if (!tick) {
         return;
     }
 
-
-    /*
-     * Verificar que el tick
-     * pertenece al mercado actual.
-     */
-
-    if (
-        tick.symbol &&
-        currentSymbol &&
-        tick.symbol !== currentSymbol
-    ) {
-
+    if (tick.symbol && currentSymbol && tick.symbol !== currentSymbol) {
         return;
-
     }
 
+    const price = Number(tick.quote);
 
-    const price =
-        Number(tick.quote);
-
-
-    if (
-        !Number.isFinite(price)
-    ) {
-
+    if (!Number.isFinite(price)) {
         return;
-
     }
-
-
-    /* =====================================================
-       GRÁFICA
-
-       SIEMPRE continúa.
-       Incluso después de STOP.
-       ===================================================== */
 
     chartPrices.push(price);
 
-
-    if (
-        chartPrices.length > 150
-    ) {
-
+    if (chartPrices.length > 150) {
         chartPrices.shift();
-
     }
-
 
     if (lastDigit) {
-
-        lastDigit.textContent =
-            getLastDigit(price);
-
+        lastDigit.textContent = getLastDigit(price);
     }
-
 
     markChartUpdate();
 
-
-    /* =====================================================
-       ANÁLISIS
-
-       SOLO entra si START está activo.
-       ===================================================== */
-
     if (!isAnalyzing) {
-
         return;
-
     }
 
-
-    const digit =
-        getLastDigit(price);
-
+    const digit = getLastDigit(price);
 
     analysisDigits.push(digit);
-
     analysisTickCount++;
 
-
     if (tickDisplay) {
-
-        tickDisplay.textContent =
-            analysisTickCount;
-
+        tickDisplay.textContent = analysisTickCount;
     }
 
-
     updateDigitDistribution();
-
 }
 
 
@@ -794,29 +557,14 @@ function handleTick(tick) {
    ========================================================= */
 
 function getLastDigit(price) {
-
-    const text =
-        String(price);
-
-
-    const clean =
-        text.replace(
-            /[^0-9]/g,
-            ""
-        );
-
+    const text = String(price);
+    const clean = text.replace(/[^0-9]/g, "");
 
     if (!clean) {
         return 0;
     }
 
-
-    return Number(
-        clean[
-            clean.length - 1
-        ]
-    );
-
+    return Number(clean[clean.length - 1]);
 }
 
 
@@ -825,81 +573,36 @@ function getLastDigit(price) {
    ========================================================= */
 
 function updateDigitDistribution() {
-
     if (!digitBars) {
         return;
     }
 
-
-    const counts =
-        Array(10).fill(0);
-
+    const counts = Array(10).fill(0);
 
     analysisDigits.forEach(digit => {
-
         counts[digit]++;
-
     });
 
-
-    const total =
-        analysisDigits.length;
-
+    const total = analysisDigits.length;
 
     digitBars.innerHTML = "";
 
+    for (let digit = 0; digit <= 9; digit++) {
+        const percent = total > 0 ? (counts[digit] / total) * 100 : 0;
 
-    for (
-        let digit = 0;
-        digit <= 9;
-        digit++
-    ) {
-
-        const percent =
-            total > 0
-                ? (
-                    counts[digit] /
-                    total
-                ) * 100
-                : 0;
-
-
-        const row =
-            document.createElement(
-                "div"
-            );
-
-
-        row.className =
-            "digit-row";
-
+        const row = document.createElement("div");
+        row.className = "digit-row";
 
         row.innerHTML = `
-
-            <div class="digit-number">
-                ${digit}
-            </div>
-
+            <div class="digit-number">${digit}</div>
             <div class="digit-track">
-
-                <div
-                    class="digit-fill"
-                    style="width:${percent.toFixed(2)}%"
-                ></div>
-
+                <div class="digit-fill" style="width:${percent.toFixed(2)}%"></div>
             </div>
-
-            <div class="digit-value">
-                ${percent.toFixed(2)}%
-            </div>
-
+            <div class="digit-value">${percent.toFixed(2)}%</div>
         `;
 
-
         digitBars.appendChild(row);
-
     }
-
 }
 
 
@@ -908,45 +611,19 @@ function updateDigitDistribution() {
    ========================================================= */
 
 function resizeCanvas() {
-
-    if (
-        !canvas ||
-        !ctx
-    ) {
-
+    if (!canvas || !ctx) {
         return;
-
     }
 
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
 
-    const rect =
-        canvas.getBoundingClientRect();
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
 
-
-    const ratio =
-        window.devicePixelRatio || 1;
-
-
-    canvas.width =
-        rect.width * ratio;
-
-
-    canvas.height =
-        rect.height * ratio;
-
-
-    ctx.setTransform(
-        ratio,
-        0,
-        0,
-        ratio,
-        0,
-        0
-    );
-
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
     markChartUpdate();
-
 }
 
 
@@ -955,23 +632,16 @@ function resizeCanvas() {
    ========================================================= */
 
 function markChartUpdate() {
-
     if (renderPending) {
         return;
     }
 
-
     renderPending = true;
 
-
     requestAnimationFrame(() => {
-
         renderPending = false;
-
         drawChart();
-
     });
-
 }
 
 
@@ -980,288 +650,86 @@ function markChartUpdate() {
    ========================================================= */
 
 function drawChart() {
-
-    if (
-        !canvas ||
-        !ctx
-    ) {
-
+    if (!canvas || !ctx) {
         return;
-
     }
 
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
 
-    const width =
-        canvas.clientWidth;
-
-
-    const height =
-        canvas.clientHeight;
-
-
-    if (
-        width <= 0 ||
-        height <= 0
-    ) {
-
+    if (width <= 0 || height <= 0) {
         return;
-
     }
 
+    ctx.clearRect(0, 0, width, height);
 
-    ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-
-    /*
-     * GRID
-     */
-
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.07)";
-
-
+    ctx.strokeStyle = "rgba(255,255,255,0.07)";
     ctx.lineWidth = 1;
 
-
-    for (
-        let x = 0;
-        x < width;
-        x += 50
-    ) {
-
+    for (let x = 0; x < width; x += 50) {
         ctx.beginPath();
-
-        ctx.moveTo(
-            x,
-            0
-        );
-
-        ctx.lineTo(
-            x,
-            height
-        );
-
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
         ctx.stroke();
-
     }
 
-
-    for (
-        let y = 0;
-        y < height;
-        y += 40
-    ) {
-
+    for (let y = 0; y < height; y += 40) {
         ctx.beginPath();
-
-        ctx.moveTo(
-            0,
-            y
-        );
-
-        ctx.lineTo(
-            width,
-            y
-        );
-
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
         ctx.stroke();
-
     }
 
-
-    /*
-     * SIN DATOS
-     */
-
-    if (
-        chartPrices.length < 2
-    ) {
-
-        ctx.fillStyle =
-            "rgba(255,255,255,0.6)";
-
-
-        ctx.font =
-            "14px Arial";
-
-
-        ctx.textAlign =
-            "center";
-
-
-        ctx.textBaseline =
-            "middle";
-
-
-        ctx.fillText(
-            "Waiting for real market ticks...",
-            width / 2,
-            height / 2
-        );
-
-
+    if (chartPrices.length < 2) {
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Waiting for real market ticks...", width / 2, height / 2);
         return;
-
     }
 
+    const data = chartPrices.slice(-100);
 
-    const data =
-        chartPrices.slice(-100);
+    let min = Math.min(...data);
+    let max = Math.max(...data);
 
-
-    let min =
-        Math.min(...data);
-
-
-    let max =
-        Math.max(...data);
-
-
-    if (
-        min === max
-    ) {
-
+    if (min === max) {
         min -= 0.0001;
-
         max += 0.0001;
-
     }
-
 
     const padding = 20;
-
-    const chartWidth =
-        width -
-        padding * 2;
-
-    const chartHeight =
-        height -
-        padding * 2;
-
-
-    /*
-     * LÍNEA
-     */
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
 
     ctx.beginPath();
 
-
-    for (
-        let i = 0;
-        i < data.length;
-        i++
-    ) {
-
-        const normalized =
-            (
-                data[i] - min
-            ) /
-            (
-                max - min
-            );
-
-
-        const x =
-            padding +
-            (
-                i /
-                (data.length - 1)
-            ) *
-            chartWidth;
-
-
-        const y =
-            height -
-            padding -
-            (
-                normalized *
-                chartHeight
-            );
-
+    for (let i = 0; i < data.length; i++) {
+        const normalized = (data[i] - min) / (max - min);
+        const x = padding + (i / (data.length - 1)) * chartWidth;
+        const y = height - padding - (normalized * chartHeight);
 
         if (i === 0) {
-
-            ctx.moveTo(
-                x,
-                y
-            );
-
+            ctx.moveTo(x, y);
         } else {
-
-            ctx.lineTo(
-                x,
-                y
-            );
-
+            ctx.lineTo(x, y);
         }
-
     }
 
-
-    ctx.strokeStyle =
-        "#4da3ff";
-
-
+    ctx.strokeStyle = "#4da3ff";
     ctx.lineWidth = 2;
-
-
     ctx.stroke();
 
-
-    /*
-     * ÚLTIMO PUNTO
-     */
-
-    const lastIndex =
-        data.length - 1;
-
-
-    const normalized =
-        (
-            data[lastIndex] - min
-        ) /
-        (
-            max - min
-        );
-
-
-    const x =
-        padding +
-        chartWidth;
-
-
-    const y =
-        height -
-        padding -
-        (
-            normalized *
-            chartHeight
-        );
-
+    const lastIndex = data.length - 1;
+    const normalized = (data[lastIndex] - min) / (max - min);
+    const x = padding + chartWidth;
+    const y = height - padding - (normalized * chartHeight);
 
     ctx.beginPath();
-
-
-    ctx.arc(
-        x,
-        y,
-        4,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-        "#ffffff";
-
-
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
-
 }
 
 
@@ -1270,56 +738,24 @@ function drawChart() {
    ========================================================= */
 
 function startTimer() {
-
     stopTimer();
 
+    analysisStartTime = Date.now();
 
-    analysisStartTime =
-        Date.now();
+    timerInterval = setInterval(() => {
+        if (!isAnalyzing) {
+            return;
+        }
 
+        const elapsed = Math.floor((Date.now() - analysisStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
 
-    timerInterval =
-        setInterval(() => {
-
-            if (!isAnalyzing) {
-                return;
-            }
-
-
-            const elapsed =
-                Math.floor(
-                    (
-                        Date.now() -
-                        analysisStartTime
-                    ) / 1000
-                );
-
-
-            const minutes =
-                Math.floor(
-                    elapsed / 60
-                );
-
-
-            const seconds =
-                elapsed % 60;
-
-
-            if (timeDisplay) {
-
-                timeDisplay.textContent =
-                    String(minutes)
-                        .padStart(2, "0")
-                    +
-                    ":"
-                    +
-                    String(seconds)
-                        .padStart(2, "0");
-
-            }
-
-        }, 1000);
-
+        if (timeDisplay) {
+            timeDisplay.textContent =
+                String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        }
+    }, 1000);
 }
 
 
@@ -1328,17 +764,10 @@ function startTimer() {
    ========================================================= */
 
 function stopTimer() {
-
     if (timerInterval) {
-
-        clearInterval(
-            timerInterval
-        );
-
+        clearInterval(timerInterval);
         timerInterval = null;
-
     }
-
 }
 
 
@@ -1347,93 +776,49 @@ function stopTimer() {
    ========================================================= */
 
 async function startAnalysis() {
-
-    /*
-     * Si está analizando:
-     * STOP.
-     */
-
     if (isAnalyzing) {
-
         stopAnalysis();
-
         return;
-
     }
 
-
-    /*
-     * NUEVO ANÁLISIS
-     */
-
     analysisDigits = [];
-
     analysisTickCount = 0;
-
     finalResult = null;
-
 
     if (tickDisplay) {
         tickDisplay.textContent = "0";
     }
 
-
     if (timeDisplay) {
         timeDisplay.textContent = "00:00";
     }
 
-
     if (resultSection) {
-
-        resultSection.classList.add(
-            "hidden"
-        );
-
+        resultSection.classList.add("hidden");
     }
-
 
     updateDigitDistribution();
 
-
     isAnalyzing = true;
 
+    startBtn.textContent = "STOP ANALYSIS";
 
-    startBtn.textContent =
-        "STOP ANALYSIS";
-
-
-    setStatus(
-        "ANALYZING"
-    );
-
+    setStatus("ANALYZING");
 
     startTimer();
 
-
     try {
-
         await connectToDeriv();
-
     } catch (error) {
-
         console.error(error);
 
-
         isAnalyzing = false;
-
         stopTimer();
 
+        startBtn.textContent = "START ANALYSIS";
 
-        startBtn.textContent =
-            "START ANALYSIS";
-
-
-        setStatus(
-            "CONNECTION ERROR"
-        );
-
+        setStatus("CONNECTION ERROR");
     }
-
 }
 
 
@@ -1442,42 +827,15 @@ async function startAnalysis() {
    ========================================================= */
 
 function stopAnalysis() {
-
-    /*
-     * PRIMERO congelamos el análisis.
-     */
-
     isAnalyzing = false;
-
-
-    /*
-     * Detener reloj.
-     */
 
     stopTimer();
 
+    startBtn.textContent = "START ANALYSIS";
 
-    /*
-     * La conexión NO se cierra.
-     *
-     * La gráfica continúa recibiendo
-     * ticks reales.
-     *
-     * Pero handleTick() ya no los
-     * mete en analysisDigits.
-     */
-
-    startBtn.textContent =
-        "START ANALYSIS";
-
-
-    setStatus(
-        "ANALYSIS STOPPED"
-    );
-
+    setStatus("ANALYSIS STOPPED");
 
     generateFinalResult();
-
 }
 
 
@@ -1486,346 +844,140 @@ function stopAnalysis() {
    ========================================================= */
 
 function generateFinalResult() {
+    const total = analysisDigits.length;
 
-    const total =
-        analysisDigits.length;
-
-
-    if (
-        total === 0
-    ) {
-
+    if (total === 0) {
         if (recommendation) {
-            recommendation.textContent =
-                "NO DATA";
+            recommendation.textContent = "NO DATA";
         }
-
         if (percentage) {
-            percentage.textContent =
-                "0%";
+            percentage.textContent = "0%";
         }
-
         if (resultTicks) {
-            resultTicks.textContent =
-                "0";
+            resultTicks.textContent = "0";
         }
-
         if (confidence) {
-            confidence.textContent =
-                "LOW";
+            confidence.textContent = "LOW";
         }
-
         if (resultMarket) {
-            resultMarket.textContent =
-                getSelectedMarket();
+            resultMarket.textContent = getSelectedMarket();
         }
-
         if (resultSection) {
-            resultSection.classList.remove(
-                "hidden"
-            );
+            resultSection.classList.remove("hidden");
         }
 
         return;
-
     }
 
-
-    const counts =
-        Array(10).fill(0);
-
+    const counts = Array(10).fill(0);
 
     analysisDigits.forEach(digit => {
-
         counts[digit]++;
-
     });
 
+    const strategy = strategySelect.value;
 
-    const strategy =
-        strategySelect.value;
+    let resultText = "—";
+    let resultPercentage = 0;
 
-
-    let resultText =
-        "—";
-
-
-    let resultPercentage =
-        0;
-
-
-    /* =====================================================
-       MATCHES / DIFFERS
-       ===================================================== */
-
-    if (
-        strategy === "matches"
-    ) {
-
+    if (strategy === "matches") {
         let bestDigit = 0;
 
-
-        for (
-            let i = 1;
-            i <= 9;
-            i++
-        ) {
-
-            if (
-                counts[i] >
-                counts[bestDigit]
-            ) {
-
+        for (let i = 1; i <= 9; i++) {
+            if (counts[i] > counts[bestDigit]) {
                 bestDigit = i;
-
             }
-
         }
 
-
-        resultText =
-            `MATCH ${bestDigit}`;
-
-
-        resultPercentage =
-            (
-                counts[bestDigit] /
-                total
-            ) * 100;
-
+        resultText = `MATCH ${bestDigit}`;
+        resultPercentage = (counts[bestDigit] / total) * 100;
     }
 
-
-    /* =====================================================
-       EVEN / ODD
-       ===================================================== */
-
-    if (
-        strategy === "evenodd"
-    ) {
-
+    if (strategy === "evenodd") {
         let even = 0;
-
         let odd = 0;
 
-
         analysisDigits.forEach(digit => {
-
-            if (
-                digit % 2 === 0
-            ) {
-
+            if (digit % 2 === 0) {
                 even++;
-
             } else {
-
                 odd++;
-
             }
-
         });
 
-
-        if (
-            even >= odd
-        ) {
-
-            resultText =
-                "EVEN";
-
-
-            resultPercentage =
-                (
-                    even /
-                    total
-                ) * 100;
-
+        if (even >= odd) {
+            resultText = "EVEN";
+            resultPercentage = (even / total) * 100;
         } else {
-
-            resultText =
-                "ODD";
-
-
-            resultPercentage =
-                (
-                    odd /
-                    total
-                ) * 100;
-
+            resultText = "ODD";
+            resultPercentage = (odd / total) * 100;
         }
-
     }
 
-
-    /* =====================================================
-       OVER / UNDER
-       ===================================================== */
-
-    if (
-        strategy === "overunder"
-    ) {
-
+    if (strategy === "overunder") {
         let over = 0;
-
         let under = 0;
 
-
         analysisDigits.forEach(digit => {
-
-            if (
-                digit >= 5
-            ) {
-
+            if (digit >= 5) {
                 over++;
-
             } else {
-
                 under++;
-
             }
-
         });
 
-
-        if (
-            over >= under
-        ) {
-
-            resultText =
-                "OVER 4";
-
-
-            resultPercentage =
-                (
-                    over /
-                    total
-                ) * 100;
-
+        if (over >= under) {
+            resultText = "OVER 4";
+            resultPercentage = (over / total) * 100;
         } else {
-
-            resultText =
-                "UNDER 5";
-
-
-            resultPercentage =
-                (
-                    under /
-                    total
-                ) * 100;
-
+            resultText = "UNDER 5";
+            resultPercentage = (under / total) * 100;
         }
-
     }
 
+    let confidenceText = "LOW";
 
-    let confidenceText =
-        "LOW";
-
-
-    if (
-        resultPercentage >= 15
-    ) {
-
-        confidenceText =
-            "MEDIUM";
-
+    if (resultPercentage >= 15) {
+        confidenceText = "MEDIUM";
     }
 
-
-    if (
-        resultPercentage >= 20
-    ) {
-
-        confidenceText =
-            "HIGH";
-
+    if (resultPercentage >= 20) {
+        confidenceText = "HIGH";
     }
-
-
-    /*
-     * CONGELAMOS EL RESULTADO.
-     */
 
     finalResult = {
-
-        recommendation:
-            resultText,
-
-        percentage:
-            resultPercentage,
-
-        ticks:
-            total,
-
-        confidence:
-            confidenceText,
-
-        market:
-            getSelectedMarket()
-
+        recommendation: resultText,
+        percentage: resultPercentage,
+        ticks: total,
+        confidence: confidenceText,
+        market: getSelectedMarket()
     };
 
-
-    /*
-     * MOSTRAR.
-     */
-
     if (recommendation) {
-
-        recommendation.textContent =
-            finalResult.recommendation;
-
+        recommendation.textContent = finalResult.recommendation;
     }
-
 
     if (percentage) {
-
-        percentage.textContent =
-            finalResult.percentage.toFixed(2)
-            +
-            "%";
-
+        percentage.textContent = finalResult.percentage.toFixed(2) + "%";
     }
-
 
     if (resultTicks) {
-
-        resultTicks.textContent =
-            finalResult.ticks;
-
+        resultTicks.textContent = finalResult.ticks;
     }
-
 
     if (confidence) {
-
-        confidence.textContent =
-            finalResult.confidence;
-
+        confidence.textContent = finalResult.confidence;
     }
-
 
     if (resultMarket) {
-
-        resultMarket.textContent =
-            finalResult.market;
-
+        resultMarket.textContent = finalResult.market;
     }
-
 
     if (resultSection) {
-
-        resultSection.classList.remove(
-            "hidden"
-        );
-
+        resultSection.classList.remove("hidden");
     }
 
-
-    console.log(
-        "FINAL ANALYSIS:",
-        finalResult
-    );
-
+    console.log("FINAL ANALYSIS:", finalResult);
 }
 
 
@@ -1834,140 +986,60 @@ function generateFinalResult() {
    ========================================================= */
 
 async function changeMarket() {
-
-    /*
-     * No permitir cambiar durante
-     * un análisis.
-     */
-
     if (isAnalyzing) {
+        marketSelect.value = marketSelect.dataset.previous || marketSelect.value;
 
-        marketSelect.value =
-            marketSelect.dataset.previous ||
-            marketSelect.value;
-
-
-        alert(
-            "Primero detén el análisis antes de cambiar de mercado."
-        );
-
+        alert("Primero detén el análisis antes de cambiar de mercado.");
 
         return;
-
     }
 
-
-    /*
-     * Guardar selección.
-     */
-
-    marketSelect.dataset.previous =
-        marketSelect.value;
-
-
-    /*
-     * Resetear análisis.
-     */
+    marketSelect.dataset.previous = marketSelect.value;
 
     analysisDigits = [];
-
     analysisTickCount = 0;
-
     finalResult = null;
-
 
     if (tickDisplay) {
         tickDisplay.textContent = "0";
     }
 
-
     if (timeDisplay) {
         timeDisplay.textContent = "00:00";
     }
 
-
     if (resultSection) {
-
-        resultSection.classList.add(
-            "hidden"
-        );
-
+        resultSection.classList.add("hidden");
     }
-
 
     updateDigitDistribution();
 
-
     updateMarketInformation();
-
-
-    /*
-     * Limpiar COMPLETAMENTE
-     * la gráfica anterior.
-     */
 
     chartPrices = [];
 
-
     if (lastDigit) {
-
-        lastDigit.textContent =
-            "—";
-
+        lastDigit.textContent = "—";
     }
-
 
     markChartUpdate();
 
-
-    setStatus(
-        "LOADING MARKET"
-    );
-
-
-    /*
-     * Si la conexión ya existe,
-     * pedir los símbolos nuevamente.
-     */
+    setStatus("LOADING MARKET");
 
     try {
-
         await connectToDeriv();
 
-
-        if (
-            socket &&
-            socket.readyState ===
-            WebSocket.OPEN
-        ) {
-
-            socket.send(
-                JSON.stringify({
-
-                    active_symbols:
-                        "brief",
-
-                    req_id:
-                        100
-
-                })
-            );
-
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                active_symbols: "brief",
+                req_id: 100
+            }));
         }
-
     } catch (error) {
+        console.error(error);
 
-        console.error(
-            error
-        );
-
-
-        setStatus(
-            "CONNECTION ERROR"
-        );
-
+        setStatus("CONNECTION ERROR");
     }
-
 }
 
 
@@ -1976,49 +1048,30 @@ async function changeMarket() {
    ========================================================= */
 
 function resetAnalysis() {
-
     isAnalyzing = false;
-
     stopTimer();
 
-
     analysisDigits = [];
-
     analysisTickCount = 0;
-
     finalResult = null;
-
 
     if (tickDisplay) {
         tickDisplay.textContent = "0";
     }
 
-
     if (timeDisplay) {
         timeDisplay.textContent = "00:00";
     }
 
-
     if (resultSection) {
-
-        resultSection.classList.add(
-            "hidden"
-        );
-
+        resultSection.classList.add("hidden");
     }
-
 
     updateDigitDistribution();
 
+    startBtn.textContent = "START ANALYSIS";
 
-    startBtn.textContent =
-        "START ANALYSIS";
-
-
-    setStatus(
-        "READY"
-    );
-
+    setStatus("READY");
 }
 
 
@@ -2026,61 +1079,33 @@ function resetAnalysis() {
    EVENTOS
    ========================================================= */
 
-marketSelect.addEventListener(
-    "change",
-    changeMarket
-);
+marketSelect.addEventListener("change", changeMarket);
 
-
-strategySelect.addEventListener(
-    "change",
-    () => {
-
-        if (isAnalyzing) {
-
-            alert(
-                "Detén el análisis antes de cambiar de estrategia."
-            );
-
-            return;
-
-        }
-
-
-        updateMarketInformation();
-
+strategySelect.addEventListener("change", () => {
+    if (isAnalyzing) {
+        alert("Detén el análisis antes de cambiar de estrategia.");
+        return;
     }
-);
 
+    updateMarketInformation();
+});
 
-startBtn.addEventListener(
-    "click",
-    startAnalysis
-);
-
+startBtn.addEventListener("click", startAnalysis);
 
 if (newAnalysis) {
-
-    newAnalysis.addEventListener(
-        "click",
-        resetAnalysis
-    );
-
+    newAnalysis.addEventListener("click", resetAnalysis);
 }
 
-
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
+window.addEventListener("resize", resizeCanvas);
 
 
 /* =========================================================
-   INICIO
+   INICIO DEL ANALIZADOR
+   (se ejecuta SOLO cuando login() lo llama tras un
+   código de acceso válido — ya no se auto-ejecuta al cargar)
    ========================================================= */
 
-function initialize() {
-
+function initializeAnalyzer() {
     updateMarketInformation();
 
     setStatus("READY");
@@ -2089,24 +1114,9 @@ function initialize() {
 
     updateDigitDistribution();
 
-
-    /*
-     * Guardar mercado inicial.
-     */
-
     if (marketSelect) {
-
-        marketSelect.dataset.previous =
-            marketSelect.value;
-
+        marketSelect.dataset.previous = marketSelect.value;
     }
 
-
-    console.log(
-        "ANALYSTIC INITIALIZED"
-    );
-
+    console.log("ANALYSTIC INITIALIZED");
 }
-
-
-initialize();
