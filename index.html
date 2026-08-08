@@ -12,7 +12,97 @@
 
 <body>
 
-<div class="app">
+<!-- LOGIN -->
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <div class="logo">
+            ANALY<span>STIC</span>
+        </div>
+
+        <div class="login-subtitle">
+            MARKET ANALYSIS SYSTEM
+        </div>
+
+
+        <div class="login-content">
+
+            <h1>
+                Bienvenido
+            </h1>
+
+            <p>
+                <b>Ingresa el código de acceso.</b>
+                ¿No tienes un código de acceso?
+                Contáctate al número 310 724 1979
+                para adquirir tu código de acceso.
+                
+            </p>
+
+
+            <div class="input-group">
+
+                <label for="accessCode">
+                    ACCESS CODE
+                </label>
+
+                <input
+                    type="text"
+                    id="accessCode"
+                    placeholder="00-00-00"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <button
+                id="loginButton"
+                type="button"
+            >
+                ENTER ANALYSTIC
+            </button>
+
+
+            <div
+                id="loginMessage"
+                class="login-message"
+            ></div>
+
+        </div>
+            
+
+        <div class="login-footer">
+
+            <span>
+                SECURE ACCESS
+            </span>
+
+            <span>
+                •
+            </span>
+
+            <span>
+                ANALYSTIC
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- LOADING -->
+
+<div id="loadingScreen" class="loading-screen hidden">
+    <div class="spinner"></div>
+</div>
+
+
+<div id="mainApp" class="app hidden">
 
     <!-- HEADER -->
     <header class="header">
@@ -21,9 +111,21 @@
             ANALY<span>STIC</span>
         </div>
 
-        <div class="system-status">
-            <span class="status-dot"></span>
-            <span id="systemStatus">SYSTEM ONLINE</span>
+        <div class="header-right">
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <span id="systemStatus">SYSTEM ONLINE</span>
+            </div>
+
+            <button
+                id="logoutButton"
+                class="logout-button"
+                type="button"
+            >
+                LOG OUT
+            </button>
+
         </div>
 
     </header>
